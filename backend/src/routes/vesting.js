@@ -41,7 +41,14 @@ function contractIdMiddleware(req, res, next) {
  */
 router.get('/schedule/:id', contractIdMiddleware, async (req, res, next) => {
   try {
-    const scheduleId = BigInt(req.params.id);
+    const rawId = req.params.id;
+    const isValidPositiveInteger = /^\d+$/.test(rawId) && BigInt(rawId) > 0n;
+
+    if (!isValidPositiveInteger) {
+      return res.status(400).json({ error: 'scheduleId must be a positive integer' });
+    }
+
+    const scheduleId = BigInt(rawId);
     logger.info(`get_schedule id=${scheduleId}`);
 
     // In a full implementation this would call simulateContractCall.

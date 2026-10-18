@@ -6,6 +6,7 @@ const VALID_ADDRESS = 'GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF'
 
 jest.mock('../services/stellar', () => ({
   simulateContractCall: jest.fn().mockResolvedValue({ result: 'stub' }),
+  validateStellarAddress: jest.fn((addr) => typeof addr === 'string' && addr.startsWith('G') && addr.length > 2 && !['GOWNER'].includes(addr)),
   NETWORK_PASSPHRASE: 'Test SDF Network ; September 2015',
   RPC_URL: 'https://soroban-testnet.stellar.org',
 }));
@@ -64,7 +65,7 @@ describe('Multisig routes', () => {
     it('returns 400 for invalid owner address', async () => {
       const res = await request(app)
         .post('/api/multisig/confirm')
-        .send({ owner: 'GABC', proposalId: 1 });
+        .send({ owner: 'GOWNER', proposalId: 1 });
       expect(res.status).toBe(400);
       expect(res.body.error).toMatch(/invalid Stellar address: owner/);
     });
@@ -88,7 +89,7 @@ describe('Multisig routes', () => {
     it('returns 202 with valid body', async () => {
       const res = await request(app)
         .post('/api/multisig/cancel')
-        .send({ caller: 'GABC', proposalId: 1 });
+        .send({ caller: VALID_ADDRESS, proposalId: 1 });
       expect(res.status).toBe(202);
     });
 
@@ -156,7 +157,7 @@ describe('Multisig routes', () => {
     it('returns 400 for invalid owner address', async () => {
       const res = await request(app)
         .post('/api/multisig/revoke-confirm')
-        .send({ owner: 'GOWNER', proposalId: 42 });
+        .send({ owner: 'not-a-stellar-address', proposalId: 42 });
       expect(res.status).toBe(400);
       expect(res.body.error).toMatch(/invalid Stellar address: owner/);
     });

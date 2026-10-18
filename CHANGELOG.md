@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Fixed — 2026-10-18
+
+- backend/src/routes/vesting.js: reject invalid schedule IDs before converting
+  `req.params.id` with `BigInt()`. The GET `/api/vesting/schedule/:id` route now
+  returns HTTP 400 with `{ error: 'scheduleId must be a positive integer' }` for
+  non-numeric or negative IDs instead of crashing with a 500. Added regression
+  coverage in `backend/src/routes/vesting.test.js` for `abc` and `-1` inputs.
+
 ### Added — 2026-10-17
 
 - backend/src/services/stellar.js: `validateStellarAddress(addr)` helper (#132).

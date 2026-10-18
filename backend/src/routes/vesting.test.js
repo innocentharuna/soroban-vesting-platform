@@ -6,6 +6,7 @@ const { StrKey } = require('@stellar/stellar-sdk');
 // Stub stellar service before requiring the app so routes don't need real RPC.
 jest.mock('../services/stellar', () => ({
   simulateContractCall: jest.fn().mockResolvedValue({ result: 'stub' }),
+  validateStellarAddress: jest.fn((addr) => typeof addr === 'string' && addr.startsWith('G') && addr.length >= 56),
   NETWORK_PASSPHRASE: 'Test SDF Network ; September 2015',
   RPC_URL: 'https://soroban-testnet.stellar.org',
 }));
@@ -29,6 +30,18 @@ describe('Vesting routes', () => {
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
       expect(res.body.data.id).toBe(1);
+    });
+
+    it('returns 400 when schedule id is not numeric', async () => {
+      const res = await request(app).get('/api/vesting/schedule/abc');
+      expect(res.status).toBe(400);
+      expect(res.body).toHaveProperty('error', 'scheduleId must be a positive integer');
+    });
+
+    it('returns 400 when schedule id is negative', async () => {
+      const res = await request(app).get('/api/vesting/schedule/-1');
+      expect(res.status).toBe(400);
+      expect(res.body).toHaveProperty('error', 'scheduleId must be a positive integer');
     });
   });
 

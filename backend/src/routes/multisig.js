@@ -15,7 +15,7 @@
  */
 
 const { Router } = require('express');
-logger = require('../logger');
+const logger = require('../logger');
 const { validateStellarAddress } = require('../services/stellar');
 
 const router = Router();
